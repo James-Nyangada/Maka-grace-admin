@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 export async function GET(req) {
   try {
+    if (!resend) {
+      return NextResponse.json(
+        { error: "Email service is not configured. Set RESEND_API_KEY to enable weekly summaries." },
+        { status: 503 }
+      )
+    }
     // In a real application, you would fetch real data from your DB here
     // e.g. const newBookings = await BookingModel.find({ createdAt: { $gte: lastMonday } })
 
