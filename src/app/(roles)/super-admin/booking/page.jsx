@@ -27,6 +27,9 @@ export default function BookingsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedBooking, setSelectedBooking] = useState(null)
+  const [isEditingBooking, setIsEditingBooking] = useState(false)
+  const [editBookingData, setEditBookingData] = useState({})
+  const [isSaving, setIsSaving] = useState(false)
   
   // Email state
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
@@ -101,6 +104,33 @@ export default function BookingsPage() {
     }
   }
 
+  const handleEditClick = () => {
+    setEditBookingData({ ...selectedBooking })
+    setIsEditingBooking(true)
+  }
+
+  const handleSaveBooking = async () => {
+    setIsSaving(true)
+    try {
+      if (API) {
+        const res = await api.bookings.update(selectedBooking._id, editBookingData)
+        setBookings(bookings.map(b => (b._id === selectedBooking._id ? res : b)))
+        setSelectedBooking(res)
+      } else {
+        const updated = { ...selectedBooking, ...editBookingData }
+        setBookings(bookings.map(b => (b._id === selectedBooking._id ? updated : b)))
+        setSelectedBooking(updated)
+      }
+      toast.success("Booking updated successfully. Customer notified via email.")
+      setIsEditingBooking(false)
+    } catch (error) {
+      console.error("Error updating booking:", error)
+      toast.error("Failed to update booking")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const exportToCSV = () => {
     if (filteredBookings.length === 0) return
 
@@ -165,7 +195,7 @@ export default function BookingsPage() {
       packageName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bookingId.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesStatus = statusFilter === "all" || booking.status === statusFilter
+    const matchesStatus = statusFilter === "all" || booking.status?.toLowerCase() === statusFilter?.toLowerCase()
     return matchesSearch && matchesStatus
   })
 
@@ -193,11 +223,10 @@ export default function BookingsPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card><CardContent className="p-4"><div className="flex items-center space-x-2"><Calendar className="h-4 w-4 text-primary" /><div><p className="text-sm font-medium">Total Bookings</p><p className="text-2xl font-bold text-primary">{bookings.length}</p></div></div></CardContent></Card>
-          <Card><CardContent className="p-4"><div className="flex items-center space-x-2"><CreditCard className="h-4 w-4 text-green-600" /><div><p className="text-sm font-medium">Confirmed Bookings</p><p className="text-2xl font-bold text-green-600">{bookings.filter((b) => b.status === "Confirmed").length}</p></div></div></CardContent></Card>
-          <Card><CardContent className="p-4"><div className="flex items-center space-x-2"><CreditCard className="h-4 w-4 text-orange-600" /><div><p className="text-sm font-medium">Pending Bookings</p><p className="text-2xl font-bold text-orange-600">{bookings.filter((b) => b.status === "Pending").length}</p></div></div></CardContent></Card>
-          <Card><CardContent className="p-4"><div className="flex items-center space-x-2"><CreditCard className="h-4 w-4 text-primary" /><div><p className="text-sm font-medium">Total Revenue</p><p className="text-2xl font-bold text-primary">${bookings.reduce((sum, b) => sum + (b.depositAmount || 0), 0).toLocaleString()}</p></div></div></CardContent></Card>
+          <Card><CardContent className="p-4"><div className="flex items-center space-x-2"><CreditCard className="h-4 w-4 text-green-600" /><div><p className="text-sm font-medium">Confirmed Bookings</p><p className="text-2xl font-bold text-green-600">{bookings.filter((b) => b.status?.toLowerCase() === "confirmed").length}</p></div></div></CardContent></Card>
+          <Card><CardContent className="p-4"><div className="flex items-center space-x-2"><CreditCard className="h-4 w-4 text-orange-600" /><div><p className="text-sm font-medium">Pending Bookings</p><p className="text-2xl font-bold text-orange-600">{bookings.filter((b) => b.status?.toLowerCase() === "pending").length}</p></div></div></CardContent></Card>
         </div>
 
         <Card>
@@ -293,54 +322,146 @@ export default function BookingsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Dialog>
+                          <Dialog onOpenChange={(open) => {
+                            if (!open) setIsEditingBooking(false)
+                          }}>
                             <DialogTrigger asChild>
                               <Button variant="outline" size="sm" onClick={() => setSelectedBooking(booking)}>
                                 <Eye className="h-4 w-4 mr-1" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
                                 <DialogTitle>Booking Details - {booking?._id}</DialogTitle>
                                 <DialogDescription>Complete information for this booking</DialogDescription>
                               </DialogHeader>
 
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Card>
-                                  <CardHeader className="pb-3"><CardTitle className="text-lg flex items-center"><User className="h-5 w-5 mr-2" />Customer Information</CardTitle></CardHeader>
-                                  <CardContent className="space-y-3">
-                                    <div><p className="text-sm font-medium text-muted-foreground">Name</p><p className="font-medium">{booking?.fullName}</p></div>
-                                    <div><p className="text-sm font-medium text-muted-foreground">Email</p><p className="flex items-center"><Mail className="h-4 w-4 mr-2" />{booking?.email}</p></div>
-                                    <div><p className="text-sm font-medium text-muted-foreground">Phone</p><p className="flex items-center"><Phone className="h-4 w-4 mr-2" />{booking?.phone}</p></div>
-                                  </CardContent>
-                                </Card>
-                                <Card>
-                                  <CardHeader className="pb-3"><CardTitle className="text-lg flex items-center"><Calendar className="h-5 w-5 mr-2" />Booking Information</CardTitle></CardHeader>
-                                  <CardContent className="space-y-3">
-                                    <div><p className="text-sm font-medium text-muted-foreground">Package</p><p className="font-medium">{booking?.packageName}</p></div>
-                                    <div><p className="text-sm font-medium text-muted-foreground">Destination</p><p className="flex items-center"><MapPin className="h-4 w-4 mr-2" />{booking?.destination || "N/A"}</p></div>
-                                    <div><p className="text-sm font-medium text-muted-foreground">Duration</p><p>{booking?.duration || "N/A"}</p></div>
-                                    <div><p className="text-sm font-medium text-muted-foreground">Guests</p><p>{(booking?.adults || 0) + (booking?.children || 0)} person(s)</p></div>
-                                  </CardContent>
-                                </Card>
-                                <Card>
-                                  <CardHeader className="pb-3"><CardTitle className="text-lg flex items-center"><CreditCard className="h-5 w-5 mr-2" />Payment Information</CardTitle></CardHeader>
-                                  <CardContent className="space-y-3">
-                                    <div><p className="text-sm font-medium text-muted-foreground">Total Amount</p><p className="font-bold text-lg">${booking?.totalAmount || 0}</p></div>
-                                    <div><p className="text-sm font-medium text-muted-foreground">Paid Amount</p><p className="font-medium text-green-600">${booking?.depositAmount || 0}</p></div>
-                                    <div><p className="text-sm font-medium text-muted-foreground">Payment Method</p><p>{booking?.paymentMethod || "N/A"}</p></div>
-                                    <div><p className="text-sm font-medium text-muted-foreground">Status</p><Badge variant={getStatusColor(booking?.status)}>{booking?.status}</Badge></div>
-                                  </CardContent>
-                                </Card>
-                                <Card>
-                                  <CardHeader className="pb-3"><CardTitle className="text-lg">Travel Information</CardTitle></CardHeader>
-                                  <CardContent className="space-y-3">
-                                    <div><p className="text-sm font-medium text-muted-foreground">Booking Date</p><p>{booking?.createdAt ? new Date(booking?.createdAt).toLocaleDateString() : "N/A"}</p></div>
-                                    <div><p className="text-sm font-medium text-muted-foreground">Travel Date</p><p className="font-medium">{booking?.travelDateFrom ? new Date(booking?.travelDateFrom).toLocaleDateString() : "N/A"}</p></div>
-                                    <div><p className="text-sm font-medium text-muted-foreground">Special Requests</p><p className="text-sm">{booking?.specialRequests}</p></div>
-                                  </CardContent>
-                                </Card>
-                              </div>
+                              {!isEditingBooking ? (
+                                <div className="space-y-6">
+                                  <div className="flex justify-end">
+                                    <Button onClick={handleEditClick} variant="outline" className="text-primary border-primary hover:bg-primary hover:text-white">
+                                      Edit Booking
+                                    </Button>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Customer & Booking Details */}
+                                    <div className="space-y-6">
+                                      <div>
+                                        <h3 className="text-lg font-semibold border-b pb-2 mb-4 flex items-center"><User className="h-5 w-5 mr-2 text-muted-foreground"/> Customer Info</h3>
+                                        <dl className="space-y-3 text-sm">
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Name</dt><dd className="col-span-2 font-medium">{booking?.fullName}</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Email</dt><dd className="col-span-2">{booking?.email}</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Phone</dt><dd className="col-span-2">{booking?.phone}</dd></div>
+                                        </dl>
+                                      </div>
+                                      
+                                      <div>
+                                        <h3 className="text-lg font-semibold border-b pb-2 mb-4 flex items-center"><Calendar className="h-5 w-5 mr-2 text-muted-foreground"/> Trip Details</h3>
+                                        <dl className="space-y-3 text-sm">
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Package</dt><dd className="col-span-2 font-medium">{booking?.packageName || "Custom"}</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Destination</dt><dd className="col-span-2">{booking?.destination || "N/A"}</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Travel Date</dt><dd className="col-span-2">{booking?.travelDateFrom ? new Date(booking?.travelDateFrom).toLocaleDateString() : "N/A"}</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Duration</dt><dd className="col-span-2">{booking?.duration || "N/A"}</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Guests</dt><dd className="col-span-2">{booking?.adults || 0} Adult(s), {booking?.children || 0} Child(ren)</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Special Req</dt><dd className="col-span-2 italic text-muted-foreground">{booking?.specialRequests || "None"}</dd></div>
+                                        </dl>
+                                      </div>
+                                    </div>
+
+                                    {/* Payment Details */}
+                                    <div className="space-y-6">
+                                      <div>
+                                        <h3 className="text-lg font-semibold border-b pb-2 mb-4 flex items-center"><CreditCard className="h-5 w-5 mr-2 text-muted-foreground"/> Payment Info</h3>
+                                        <dl className="space-y-3 text-sm">
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Total Amount</dt><dd className="col-span-2 font-bold">${booking?.totalAmount || 0}</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Paid Amount</dt><dd className="col-span-2 text-green-600 font-medium">${booking?.depositAmount || 0}</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Balance Due</dt><dd className="col-span-2 font-medium text-orange-600">${Math.max(0, (booking?.totalAmount || 0) - (booking?.depositAmount || 0))}</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Method</dt><dd className="col-span-2">{booking?.paymentMethod || "N/A"}</dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Status</dt><dd className="col-span-2"><Badge variant={getStatusColor(booking?.status)}>{booking?.status}</Badge></dd></div>
+                                          <div className="grid grid-cols-3"><dt className="text-muted-foreground font-medium">Booked On</dt><dd className="col-span-2">{booking?.createdAt ? new Date(booking?.createdAt).toLocaleDateString() : "N/A"}</dd></div>
+                                        </dl>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="space-y-6 py-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label>Full Name</Label>
+                                      <Input value={editBookingData.fullName || ""} onChange={e => setEditBookingData({...editBookingData, fullName: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Email</Label>
+                                      <Input value={editBookingData.email || ""} onChange={e => setEditBookingData({...editBookingData, email: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Phone</Label>
+                                      <Input value={editBookingData.phone || ""} onChange={e => setEditBookingData({...editBookingData, phone: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Package Name</Label>
+                                      <Input value={editBookingData.packageName || ""} onChange={e => setEditBookingData({...editBookingData, packageName: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Destination</Label>
+                                      <Input value={editBookingData.destination || ""} onChange={e => setEditBookingData({...editBookingData, destination: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Travel Date From</Label>
+                                      <Input type="date" value={editBookingData.travelDateFrom ? new Date(editBookingData.travelDateFrom).toISOString().split('T')[0] : ""} onChange={e => setEditBookingData({...editBookingData, travelDateFrom: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2 flex gap-4">
+                                      <div className="flex-1">
+                                        <Label>Adults</Label>
+                                        <Input type="number" value={editBookingData.adults || 0} onChange={e => setEditBookingData({...editBookingData, adults: Number(e.target.value)})} />
+                                      </div>
+                                      <div className="flex-1">
+                                        <Label>Children</Label>
+                                        <Input type="number" value={editBookingData.children || 0} onChange={e => setEditBookingData({...editBookingData, children: Number(e.target.value)})} />
+                                      </div>
+                                    </div>
+                                    <div className="space-y-2 flex gap-4">
+                                      <div className="flex-1">
+                                        <Label>Total Amount</Label>
+                                        <Input type="number" value={editBookingData.totalAmount || 0} onChange={e => setEditBookingData({...editBookingData, totalAmount: Number(e.target.value)})} />
+                                      </div>
+                                      <div className="flex-1">
+                                        <Label>Deposit Amount</Label>
+                                        <Input type="number" value={editBookingData.depositAmount || 0} onChange={e => setEditBookingData({...editBookingData, depositAmount: Number(e.target.value)})} />
+                                      </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Status</Label>
+                                      <Select value={editBookingData.status || "pending"} onValueChange={v => setEditBookingData({...editBookingData, status: v})}>
+                                        <SelectTrigger><SelectValue/></SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="pending">Pending</SelectItem>
+                                          <SelectItem value="confirmed">Confirmed</SelectItem>
+                                          <SelectItem value="completed">Completed</SelectItem>
+                                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Payment Method</Label>
+                                      <Input value={editBookingData.paymentMethod || ""} onChange={e => setEditBookingData({...editBookingData, paymentMethod: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2 md:col-span-2">
+                                      <Label>Special Requests</Label>
+                                      <Textarea value={editBookingData.specialRequests || ""} onChange={e => setEditBookingData({...editBookingData, specialRequests: e.target.value})} />
+                                    </div>
+                                  </div>
+
+                                  <div className="flex justify-end gap-2 mt-6">
+                                    <Button variant="outline" onClick={() => setIsEditingBooking(false)}>Cancel</Button>
+                                    <Button onClick={handleSaveBooking} disabled={isSaving}>
+                                      {isSaving ? "Saving..." : "Save Changes"}
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
                             </DialogContent>
                           </Dialog>
                           

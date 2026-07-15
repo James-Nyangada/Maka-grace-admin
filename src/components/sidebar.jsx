@@ -19,6 +19,7 @@ import {
   ChevronRight,
   MoreVertical,
   LogOut,
+  Image as ImageIcon,
 } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -27,7 +28,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const navigation = [
   { name: "Overview", href: "/super-admin/dashboard", icon: BarChart3 },
-  { name: "Schedule", href: "/super-admin/schedule", icon: Calendar },
+  { name: "Gallery", href: "/super-admin/gallery", icon: ImageIcon },
   { name: "Shows", href: "/super-admin/shows", icon: Radio },
   { name: "Blog Posts", href: "/super-admin/blog", icon: FileText },
   { name: "Team", href: "/super-admin/team", icon: Users },
@@ -53,7 +54,7 @@ export function Sidebar() {
       const organizationDetail = OrganizationInfo ? JSON.parse(OrganizationInfo) : null;
       const userDetail = userInfo ? JSON.parse(userInfo) : null;
     
-      const name = userDetail ? `${userDetail.firstName} ${userDetail.lastName}` : "Guest";
+      const name = userDetail ? `${userDetail.firstName} ${userDetail.lastName}` : "Admin";
       const email = userDetail?.email ?? "";
       
 

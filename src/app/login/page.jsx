@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GalleryVerticalEnd } from "lucide-react";
 import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 function LoginForm() {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -28,7 +29,7 @@ function LoginForm() {
         role: response.role
       }));
       
-      alert("Login successful");
+      toast.success("Login successful");
       
       const role = response.role;
       if (role === "super-admin") {
@@ -42,6 +43,7 @@ function LoginForm() {
       }
       
     } catch (err) {
+      toast.error(err.message || "An error occurred");
       setError(err.message || "An error occurred");
     } finally {
       setLoading(false);
@@ -51,8 +53,13 @@ function LoginForm() {
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">Admin Login</h1>
-        <p className="text-muted-foreground text-sm">Enter your credentials to access the dashboard</p>
+        <div className="flex justify-center mb-4">
+          <div className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-xl">
+            <GalleryVerticalEnd className="size-6" />
+          </div>
+        </div>
+        <h1 className="text-2xl font-heading font-bold text-foreground">Admin Login</h1>
+        <p className="text-muted-foreground text-sm">Sign in to manage your bookings, packages, and content</p>
       </div>
       <div className="space-y-4">
         <div className="space-y-2">
@@ -82,11 +89,11 @@ function LoginForm() {
             required
           />
         </div>
-        {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+        {error && <div className="bg-destructive/10 text-destructive text-sm font-medium p-3 rounded-md border border-destructive/20">{error}</div>}
         <button
           type="submit"
           disabled={loading}
-          className="bg-[#1A4731] cursor-pointer text-white hover:bg-[#1A4731]/90 inline-flex h-10 w-full items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50"
+          className="bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90 hover:scale-[0.98] active:scale-95 inline-flex h-10 w-full items-center justify-center rounded-[10px] px-4 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50"
         >
           {loading ? 'Logging in...' : 'Log In'}
         </button>
@@ -97,28 +104,21 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
+    <div className="grid min-h-screen lg:grid-cols-2 bg-[#1A4731]">
       <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a href="/" className="flex items-center gap-2 font-medium">
-            <div className="bg-[#1A4731] text-white flex size-6 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-4" />
-            </div>
-            Maka Grace Admin
-          </a>
-        </div>
         <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
+          <div className="w-full max-w-md bg-card p-10 rounded-[20px] shadow-sm">
             <LoginForm />
           </div>
         </div>
       </div>
-      <div className="bg-muted relative hidden lg:block">
+      <div className="bg-muted relative hidden lg:block rounded-l-[40px] overflow-hidden my-4 mr-4 shadow-2xl">
         <img
-          src="/images/login.jpg"
-          alt="Login background"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          src="/images/login.png"
+          alt="Luxury travel destination"
+          className="absolute inset-0 h-full w-full object-cover"
         />
+        <div className="absolute inset-0 bg-black/10 mix-blend-overlay"></div>
       </div>
     </div>
   );

@@ -171,6 +171,14 @@ export const api = {
       });
       return handleResponse(response);
     },
+    update: async (id, data) => {
+      const response = await fetch(`${API_BASE_URL}/bookings/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return handleResponse(response);
+    },
     updateStatus: async (id, status) => {
       const response = await fetch(`${API_BASE_URL}/bookings/${id}/status`, {
         method: 'PUT',
@@ -444,5 +452,71 @@ export const api = {
       });
       return handleResponse(response);
     }
+  },
+
+  gallery: {
+    getAll: async () => {
+      const response = await fetch(`${API_BASE_URL}/gallery`, {
+        headers: getHeaders(),
+      });
+      return handleResponse(response);
+    },
+    getVisible: async (params = {}) => {
+      const query = new URLSearchParams(params).toString();
+      const response = await fetch(`${API_BASE_URL}/gallery/visible?${query}`);
+      return handleResponse(response);
+    },
+    upload: async (formData) => {
+      // formData is passed here with images and caption
+      const response = await fetch(`${API_BASE_URL}/gallery`, {
+        method: 'POST',
+        headers: getHeaders(true),
+        body: formData,
+      });
+      return handleResponse(response);
+    },
+    update: async (id, data) => {
+      const response = await fetch(`${API_BASE_URL}/gallery/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return handleResponse(response);
+    },
+    toggleVisibility: async (id) => {
+      const response = await fetch(`${API_BASE_URL}/gallery/${id}/visibility`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+      });
+      return handleResponse(response);
+    },
+    delete: async (id) => {
+      const response = await fetch(`${API_BASE_URL}/gallery/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders(),
+      });
+      return handleResponse(response);
+    }
+  },
+  
+  analytics: {
+    getOverview: async () => {
+      const response = await fetch(`${API_BASE_URL}/analytics/overview`, {
+        headers: getHeaders(),
+      });
+      return handleResponse(response);
+    },
+    getTrafficVsConversions: async () => {
+      const response = await fetch(`${API_BASE_URL}/analytics/traffic-vs-conversions`, {
+        headers: getHeaders(),
+      });
+      return handleResponse(response);
+    },
+    getTopPackages: async () => {
+      const response = await fetch(`${API_BASE_URL}/analytics/top-packages`, {
+        headers: getHeaders(),
+      });
+      return handleResponse(response);
+    },
   }
 };

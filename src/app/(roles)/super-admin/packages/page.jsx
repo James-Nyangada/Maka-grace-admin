@@ -112,7 +112,7 @@ export default function ManagePackagesPage() {
             <p className="text-muted-foreground">View, edit, and manage all your travel packages</p>
           </div>
           <Button
-            className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[0.98] active:scale-95 transition-all"
             onClick={() => router.push("/super-admin/packages/add")}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -183,7 +183,7 @@ export default function ManagePackagesPage() {
                           <p className="text-sm text-muted-foreground">{pkg._id}</p>
                         </div>
                       </TableCell>
-                      <TableCell><div className="flex items-center"><MapPin className="h-3 w-3 mr-1 text-muted-foreground" />{pkg.location}</div></TableCell>
+                      <TableCell><div className="flex items-center text-sm">{pkg.location?.name || pkg.location || "N/A"}</div></TableCell>
                       <TableCell><div className="flex items-center"><Calendar className="h-3 w-3 mr-1 text-muted-foreground" />{pkg.duration}</div></TableCell>
                       <TableCell><div className="flex items-center font-medium"><DollarSign className="h-3 w-3 mr-1" />{pkg.price}</div></TableCell>
                       <TableCell><div className="flex items-center"><Users className="h-3 w-3 mr-1 text-muted-foreground" />{pkg.bookings || 0}</div></TableCell>

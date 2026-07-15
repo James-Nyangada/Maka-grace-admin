@@ -17,6 +17,8 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconMessageCircle2,
+  IconPhoto,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -37,7 +39,7 @@ import Cookies from "js-cookie"
 const userInfo = Cookies.get("user");
 const user = userInfo ? JSON.parse(userInfo) : null;
 
-const name = user ? `${user.firstName} ${user.lastName}` : "Guest";
+const name = user ? `${user.firstName} ${user.lastName}` : "Admin";
 const email = user?.email ?? "";
 
 
@@ -55,9 +57,9 @@ const data = {
       icon: IconDashboard,
     },
     {
-      title: "Schedule",
-      url: "/super-admin/schedule",
-      icon: IconListDetails,
+      title: "Gallery",
+      url: "/super-admin/gallery",
+      icon: IconPhoto,
     },
     {
       title: "Shows",
@@ -75,9 +77,19 @@ const data = {
       icon: IconFileWord,
     },
     {
+      title: "Testimonials",
+      url: "/super-admin/testimonials",
+      icon: IconMessageCircle2,
+    },
+    {
       title: "Packages",
       url: "/admin/packages",
       icon: IconListDetails,
+    },
+    {
+      title: "Testimonials",
+      url: "/admin/testimonials",
+      icon: IconMessageCircle2,
     },
   ],
   navClouds: [

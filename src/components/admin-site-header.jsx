@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import Cookies from "js-cookie"; // Ensure you have js-cookie installed
+import { toast } from "sonner";
 
 export function AdminSiteHeader() {
   const [file, setFile] = useState(null);
@@ -25,7 +26,7 @@ export function AdminSiteHeader() {
   };
 
   const handleUpload = async () => {
-    if (!file) return alert("Please select a file");
+    if (!file) return toast.error("Please select a file");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -46,10 +47,10 @@ export function AdminSiteHeader() {
 
       if (!res.ok) throw new Error(data.message || "Upload failed");
 
-      alert("File uploaded successfully!");
+      toast.success("File uploaded successfully!");
       setFile(null);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setUploading(false);
     }

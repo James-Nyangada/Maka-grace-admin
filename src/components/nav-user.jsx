@@ -58,7 +58,7 @@ export function NavUser({
   const organizationDetail = OrganizationInfo ? JSON.parse(OrganizationInfo) : null;
   const userDetail = userInfo ? JSON.parse(userInfo) : null;
 
-  const name = userDetail ? `${userDetail.firstName} ${userDetail.lastName}` : "Guest";
+  const name = userDetail ? `${userDetail.firstName} ${userDetail.lastName}` : "Admin";
   const email = userDetail?.email ?? "";
   
 

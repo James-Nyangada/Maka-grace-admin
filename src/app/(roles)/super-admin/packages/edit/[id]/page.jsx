@@ -856,7 +856,7 @@ const [packageData, setPackageData] = useState({
             <Button
               type="submit"
               disabled={loading}
-              className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[0.98] active:scale-95 transition-all"
               onClick={(e) => handleSubmit(e, false)}
             >
               {loading ? "Saving..." : <><Save className="h-4 w-4 mr-2" /> Update Package</>}

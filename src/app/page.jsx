@@ -15,7 +15,7 @@ export default function Home() {
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
               <GalleryVerticalEnd className="size-4" />
             </div>
-            Richworld Admin
+            Maka Grace Admin
           </a>
         </div>
         
@@ -24,8 +24,8 @@ export default function Home() {
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div className="max-w-xl">
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
-              Welcome to RichWorld Admin Panel,
+            <h1 className="text-4xl md:text-5xl font-heading font-bold leading-tight mb-6">
+              Welcome to Maka Grace Admin Panel,
               <br />
               the Ultimate Dashboard.
             </h1>
@@ -54,13 +54,13 @@ export default function Home() {
               
             </div>
           </div>
-          <div className="relative">
+          <div className="relative rounded-2xl overflow-hidden shadow-xl border border-border">
             <Image
-              src="/hero-safari.jpg"
-              alt="Isomorphic Dashboard on laptop and mobile"
+              src="/hero-safari.png"
+              alt="Maka Grace Safari"
               width={600}
-              height={500}
-              className="w-full h-auto"
+              height={800}
+              className="w-full h-full object-cover rounded-2xl"
               priority
             />
           </div>
