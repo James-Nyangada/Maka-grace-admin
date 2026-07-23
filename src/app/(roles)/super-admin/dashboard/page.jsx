@@ -22,15 +22,36 @@ export default function AnalyticsDashboard() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const [overviewRes, trafficRes, topPackagesRes] = await Promise.all([
+
+        // Fetch each independently so partial failures don't break the whole page
+        const [overviewRes, trafficRes, topPackagesRes] = await Promise.allSettled([
           api.analytics.getOverview(),
           api.analytics.getTrafficVsConversions(),
           api.analytics.getTopPackages()
         ]);
         
-        setOverview(overviewRes);
-        setTrafficData(trafficRes.data);
-        setTopPackages(topPackagesRes.data);
+        if (overviewRes.status === 'fulfilled') {
+          setOverview(overviewRes.value);
+        } else {
+          console.error("Overview fetch failed:", overviewRes.reason);
+        }
+
+        if (trafficRes.status === 'fulfilled') {
+          setTrafficData(trafficRes.value?.data || []);
+        } else {
+          console.error("Traffic fetch failed:", trafficRes.reason);
+        }
+
+        if (topPackagesRes.status === 'fulfilled') {
+          setTopPackages(topPackagesRes.value?.data || []);
+        } else {
+          console.error("Top packages fetch failed:", topPackagesRes.reason);
+        }
+
+        // Show error only if ALL calls failed
+        if (overviewRes.status === 'rejected' && trafficRes.status === 'rejected' && topPackagesRes.status === 'rejected') {
+          setError("Failed to load analytics data. Please check that the server is running.");
+        }
       } catch (err) {
         console.error("Failed to load analytics", err);
         setError("Failed to load analytics data. Please try again.");
