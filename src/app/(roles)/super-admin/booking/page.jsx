@@ -270,7 +270,6 @@ export default function BookingsPage() {
                     <TableHead>Customer</TableHead>
                     <TableHead>Package</TableHead>
                     <TableHead>Travel Date</TableHead>
-                    <TableHead>Amount</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -295,12 +294,6 @@ export default function BookingsPage() {
                         </div>
                       </TableCell>
                       <TableCell>{booking.travelDateFrom ? new Date(booking.travelDateFrom).toLocaleDateString() : "N/A"}</TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">${booking.totalAmount || 0}</p>
-                          <p className="text-sm text-muted-foreground">Paid: ${booking.depositAmount || 0}</p>
-                        </div>
-                      </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-2">
                           <Badge variant={getStatusColor(booking.status)}>{booking.status}</Badge>

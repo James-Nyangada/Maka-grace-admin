@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export function middleware(request) {
+export default function proxy(request) {
   // We use client-side AuthGuard with localStorage instead of cookies for auth.
   return NextResponse.next();
 }

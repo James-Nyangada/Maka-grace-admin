@@ -219,6 +219,52 @@ export const api = {
     }
   },
 
+  invoices: {
+    create: async (data) => {
+      const response = await fetch(`${API_BASE_URL}/invoices`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return handleResponse(response);
+    },
+    getAll: async () => {
+      const response = await fetch(`${API_BASE_URL}/invoices`, {
+        headers: getHeaders(),
+      });
+      return handleResponse(response);
+    },
+    getById: async (id) => {
+      const response = await fetch(`${API_BASE_URL}/invoices/${id}`, {
+        headers: getHeaders(),
+      });
+      return handleResponse(response);
+    },
+    update: async (id, data) => {
+      const response = await fetch(`${API_BASE_URL}/invoices/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return handleResponse(response);
+    },
+    delete: async (id) => {
+      const response = await fetch(`${API_BASE_URL}/invoices/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders(),
+      });
+      return handleResponse(response);
+    },
+    sendEmail: async (id, data) => {
+      const response = await fetch(`${API_BASE_URL}/invoices/${id}/email`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return handleResponse(response);
+    }
+  },
+
   enquiries: {
     create: async (data) => {
       const response = await fetch(`${API_BASE_URL}/enquiries`, {

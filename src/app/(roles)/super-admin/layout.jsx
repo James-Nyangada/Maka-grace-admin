@@ -13,13 +13,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <AuthGuard>
-          <Suspense fallback={null}>{children}</Suspense>
-        </AuthGuard>
-        <Analytics />
-      </body>
-    </html>
+    <div className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+      <AuthGuard>
+        <Suspense fallback={null}>{children}</Suspense>
+      </AuthGuard>
+      <Analytics />
+    </div>
   )
 }

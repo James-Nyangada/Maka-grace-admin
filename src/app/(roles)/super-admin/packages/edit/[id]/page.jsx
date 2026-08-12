@@ -35,9 +35,9 @@ const [packageData, setPackageData] = useState({
     specialNotes: "",
   })
 
-  const [hotels, setHotels] = useState([{ name: "", price: "" }])
+  const [hotels, setHotels] = useState([{ name: "", price: "", priceKSH: "" }])
   const [itinerary, setItinerary] = useState([{ day: "", plan: "" }])
-  const [pricing, setPricing] = useState([{ title: "", price: "" }])
+  const [pricing, setPricing] = useState([{ title: "", price: "", priceKSH: "" }])
   const [newInclusion, setNewInclusion] = useState("")
   const [newExclusion, setNewExclusion] = useState("")
   const [newHighlight, setNewHighlight] = useState("")
@@ -71,7 +71,7 @@ const [packageData, setPackageData] = useState({
         })
 
         if (data.pricing && data.pricing.length > 0) {
-          setPricing(data.pricing.map(p => ({ title: p.title, price: String(p.price) })))
+          setPricing(data.pricing.map(p => ({ title: p.title, price: String(p.price || ""), priceKSH: p.priceKSH ? String(p.priceKSH) : "" })))
         }
 
         if (data.itinerary && data.itinerary.length > 0) {
@@ -79,11 +79,15 @@ const [packageData, setPackageData] = useState({
         }
 
         if (data.accommodation) {
-          // Parse string like "Hotel A ($100), Hotel B ($200)" back to hotels array
+          // Parse string like "Hotel A ($100), Hotel B ($200)" or "Hotel A ($100 | KSH 15000)" back to hotels array
           const hotelsParsed = data.accommodation.split(',').map(h => {
-            const match = h.trim().match(/^(.*?)\s*\(\$([\d.]+)\)$/)
-            if (match) return { name: match[1].trim(), price: match[2] }
-            return { name: h.trim(), price: "" }
+            const matchDual = h.trim().match(/^(.*?)\s*\(\$([\d.]+)\s*\|\s*KSH\s*([\d.]+)\)$/)
+            if (matchDual) return { name: matchDual[1].trim(), price: matchDual[2], priceKSH: matchDual[3] }
+            
+            const matchSingle = h.trim().match(/^(.*?)\s*\(\$([\d.]+)\)$/)
+            if (matchSingle) return { name: matchSingle[1].trim(), price: matchSingle[2], priceKSH: "" }
+
+            return { name: h.trim(), price: "", priceKSH: "" }
           })
           if (hotelsParsed.length > 0 && hotelsParsed[0].name) {
             setHotels(hotelsParsed)
@@ -106,7 +110,7 @@ const [packageData, setPackageData] = useState({
   }, [id])
 
   // ====== HOTELS ======
-  const addHotel = () => setHotels([...hotels, { name: "", price: "" }])
+  const addHotel = () => setHotels([...hotels, { name: "", price: "", priceKSH: "" }])
   const removeHotel = (index) => setHotels(hotels.filter((_, i) => i !== index))
   const updateHotel = (index, field, value) => {
     setHotels(hotels.map((h, i) => (i === index ? { ...h, [field]: value } : h)))
@@ -160,7 +164,7 @@ const [packageData, setPackageData] = useState({
     setPackageData({ ...packageData, packageActivities: packageData.packageActivities.filter((_, i) => i !== index) })
 
   // ====== PRICING ======
-  const addPricing = () => setPricing([...pricing, { title: "", price: "" }])
+  const addPricing = () => setPricing([...pricing, { title: "", price: "", priceKSH: "" }])
   const removePricing = (index) => setPricing(pricing.filter((_, i) => i !== index))
   const updatePricing = (index, field, value) => {
     setPricing(pricing.map((p, i) => (i === index ? { ...p, [field]: value } : p)))
@@ -241,8 +245,8 @@ const [packageData, setPackageData] = useState({
         exclusions: packageData.exclusions,
         highlights: packageData.highlights,
         packageActivities: packageData.packageActivities,
-        pricing: pricing.map(p => ({ title: p.title, price: Number(p.price) })),
-        accommodation: hotels.map(h => h.price ? `${h.name} ($${h.price})` : h.name).join(', '),
+        pricing: pricing.map(p => ({ title: p.title, price: Number(p.price), priceKSH: Number(p.priceKSH) })),
+        accommodation: hotels.map(h => h.price ? `${h.name} ($${h.price} | KSH ${h.priceKSH || 0})` : h.name).join(', '),
         itinerary: itinerary.map((item, index) => ({
           dayNumber: index + 1,
           title: item.day,
@@ -423,16 +427,31 @@ const [packageData, setPackageData] = useState({
                     />
                   </div>
                   <div className="w-48 space-y-2">
-                    <Label htmlFor={`pricing-price-${index}`}>Price</Label>
+                    <Label htmlFor={`pricing-price-${index}`}>Price (USD)</Label>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id={`pricing-price-${index}`}
                         type="number"
-                        placeholder="Price"
+                        placeholder="Price in USD"
                         value={priceItem.price}
                         onChange={(e) => updatePricing(index, "price", e.target.value)}
                         className="pl-10 border-2 focus:border-primary"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="w-48 space-y-2">
+                    <Label htmlFor={`pricing-priceKSH-${index}`}>Price (KSH)</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-xs font-bold text-muted-foreground">KSH</span>
+                      <Input
+                        id={`pricing-priceKSH-${index}`}
+                        type="number"
+                        placeholder="Price in KSH"
+                        value={priceItem.priceKSH}
+                        onChange={(e) => updatePricing(index, "priceKSH", e.target.value)}
+                        className="pl-11 border-2 focus:border-primary"
                         required
                       />
                     </div>
@@ -736,16 +755,30 @@ const [packageData, setPackageData] = useState({
                     />
                   </div>
                   <div className="w-32 space-y-2">
-                    <Label htmlFor={`hotel-price-${index}`}>Price per night</Label>
+                    <Label htmlFor={`hotel-price-${index}`}>Price (USD)</Label>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id={`hotel-price-${index}`}
                         type="number"
-                        placeholder="Price"
+                        placeholder="USD"
                         value={hotel.price}
                         onChange={(e) => updateHotel(index, "price", e.target.value)}
                         className="pl-10 border-2 focus:border-primary"
+                      />
+                    </div>
+                  </div>
+                  <div className="w-32 space-y-2">
+                    <Label htmlFor={`hotel-priceKSH-${index}`}>Price (KSH)</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-xs font-bold text-muted-foreground">KSH</span>
+                      <Input
+                        id={`hotel-priceKSH-${index}`}
+                        type="number"
+                        placeholder="KSH"
+                        value={hotel.priceKSH}
+                        onChange={(e) => updateHotel(index, "priceKSH", e.target.value)}
+                        className="pl-11 border-2 focus:border-primary"
                       />
                     </div>
                   </div>

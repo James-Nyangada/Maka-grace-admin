@@ -86,16 +86,15 @@ export default function AnalyticsDashboard() {
       <DashboardLayout>
         <div className="space-y-6">
           <div className="h-10 w-48 bg-muted animate-pulse rounded-lg mb-6"></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map(i => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
               <div key={i} className="h-40 bg-muted animate-pulse rounded-2xl"></div>
             ))}
           </div>
           <div className="h-24 bg-muted animate-pulse rounded-2xl"></div>
           <div className="h-96 bg-muted animate-pulse rounded-2xl"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            <div className="lg:col-span-3 h-96 bg-muted animate-pulse rounded-2xl"></div>
-            <div className="lg:col-span-2 h-96 bg-muted animate-pulse rounded-2xl"></div>
+          <div className="grid grid-cols-1 gap-6">
+            <div className="h-96 bg-muted animate-pulse rounded-2xl"></div>
           </div>
         </div>
       </DashboardLayout>
@@ -135,7 +134,7 @@ export default function AnalyticsDashboard() {
         {overview && (
           <>
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
@@ -167,17 +166,6 @@ export default function AnalyticsDashboard() {
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">Confirmed Bookings</p>
                 <h3 className="text-3xl font-bold text-foreground mt-1">{formatNumber(overview.confirmedBookings.current)}</h3>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-amber-100 text-amber-600 rounded-xl">
-                    <DollarSign className="w-5 h-5" />
-                  </div>
-                  {renderGrowthBadge(overview.totalRevenue.growth)}
-                </div>
-                <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-                <h3 className="text-3xl font-bold text-foreground mt-1">{formatCurrency(overview.totalRevenue.current)}</h3>
               </motion.div>
             </div>
 
@@ -245,8 +233,8 @@ export default function AnalyticsDashboard() {
         </motion.div>
 
         {/* Bottom Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="lg:col-span-3 bg-card rounded-2xl p-6 shadow-sm border border-border/50">
+        <div className="grid grid-cols-1 gap-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
             <h3 className="text-xl font-bold text-foreground mb-6">Top Packages by Revenue</h3>
             <div className="h-[350px] w-full">
               {topPackages.length > 0 ? (
@@ -272,38 +260,6 @@ export default function AnalyticsDashboard() {
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">No package data available</div>
               )}
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="lg:col-span-2 bg-card rounded-2xl p-6 shadow-sm border border-border/50 overflow-hidden flex flex-col">
-            <h3 className="text-xl font-bold text-foreground mb-6">Leaderboard Details</h3>
-            <div className="flex-1 overflow-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="sticky top-0 bg-card z-10">
-                  <tr className="border-b border-border text-muted-foreground font-medium">
-                    <th className="pb-3 pl-2 w-8">#</th>
-                    <th className="pb-3">Package</th>
-                    <th className="pb-3 text-center">Qty</th>
-                    <th className="pb-3 text-right pr-2">Revenue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topPackages.length > 0 ? topPackages.map((pkg, idx) => (
-                    <tr key={idx} className="border-b border-border/50 last:border-0 hover:bg-muted/50 transition-colors">
-                      <td className="py-3 pl-2 text-muted-foreground font-medium">{idx + 1}</td>
-                      <td className="py-3 font-medium text-foreground max-w-[120px] truncate" title={pkg.packageName}>
-                        {pkg.packageName || 'Unknown'}
-                      </td>
-                      <td className="py-3 text-center text-muted-foreground">{pkg.totalBookings}</td>
-                      <td className="py-3 text-right pr-2 font-semibold text-emerald-600">{formatCurrency(pkg.totalRevenue)}</td>
-                    </tr>
-                  )) : (
-                    <tr>
-                      <td colSpan="4" className="py-8 text-center text-muted-foreground">No sales data found</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
             </div>
           </motion.div>
         </div>

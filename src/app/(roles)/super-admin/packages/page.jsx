@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import axios from "axios"
+import { api } from "@/lib/api"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -29,7 +29,6 @@ export default function ManagePackagesPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const router = useRouter()
 
-  const API = process.env.NEXT_PUBLIC_API_URL;
   
   useEffect(() => {
     fetchPackages()
@@ -37,8 +36,8 @@ export default function ManagePackagesPage() {
 
   const fetchPackages = async () => {
     try {
-      const res = await axios.get(`${API}/api/packages`)
-      setPackages(res.data.packages || [])
+      const res = await api.packages.getAdminAll()
+      setPackages(res.packages || [])
     } catch (err) {
       console.error("Error fetching packages:", err)
     }
@@ -46,8 +45,8 @@ export default function ManagePackagesPage() {
 
   const updatePackageStatus = async (packageId, newStatus) => {
     try {
-      const res = await axios.put(`${API}/api/packages/${packageId}`, { status: newStatus })
-      setPackages(packages.map((pkg) => (pkg._id === packageId ? res.data : pkg)))
+      const updatedPackage = await api.packages.update(packageId, { status: newStatus })
+      setPackages(packages.map((pkg) => (pkg._id === packageId ? updatedPackage : pkg)))
     } catch (err) {
       console.error("Error updating status:", err)
     }
@@ -55,7 +54,7 @@ export default function ManagePackagesPage() {
 
   const deletePackage = async (packageId) => {
     try {
-      await axios.delete(`${API}/api/packages/${packageId}`)
+      await api.packages.delete(packageId)
       setPackages(packages.filter((pkg) => pkg._id !== packageId))
     } catch (err) {
       console.error("Error deleting package:", err)

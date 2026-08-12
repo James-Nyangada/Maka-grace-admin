@@ -20,6 +20,7 @@ import {
   MoreVertical,
   LogOut,
   Image as ImageIcon,
+  Receipt,
 } from "lucide-react"
 
 const sidebarItems = [
@@ -27,6 +28,7 @@ const sidebarItems = [
     { icon: Home, label: "Overview", href: "/super-admin/dashboard" },
     { icon: Package, label: "Packages", href: "/super-admin/packages" },
     { icon: Calendar, label: "Bookings", href: "/super-admin/booking" },
+    { icon: Receipt, label: "Invoices", href: "/super-admin/invoice" },
     { icon: FileText, label: "Blog Posts", href: "/super-admin/blog" },
     { icon: MessageSquare, label: "Testimonials", href: "/super-admin/testimonials" },
   ]},
@@ -124,13 +126,15 @@ export function DashboardLayout({ children }) {
           {/* Header */}
           <header className="h-20 flex items-center justify-between px-8">
             <div className="flex items-center gap-2 bg-sidebar rounded-full border border-sidebar-border/50 p-1 px-3 shadow-sm h-10">
-              <button className="p-1 hover:bg-muted rounded-md text-muted-foreground transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-              <button className="p-1 hover:bg-muted rounded-md text-muted-foreground/30 transition-colors"><ChevronRight className="w-4 h-4" /></button>
+              <button onClick={() => router.back()} className="p-1 hover:bg-muted rounded-md text-muted-foreground transition-colors"><ChevronLeft className="w-4 h-4" /></button>
+              <button onClick={() => router.forward()} className="p-1 hover:bg-muted rounded-md text-muted-foreground transition-colors"><ChevronRight className="w-4 h-4" /></button>
               <div className="h-4 w-[1px] bg-border mx-1"></div>
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-medium text-muted-foreground">Maka Grace</span>
                 <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                <span className="font-semibold text-foreground">Dashboard</span>
+                <span className="font-semibold text-foreground capitalize">
+                  {sidebarItems.flatMap(g => g.items).find(i => pathname.startsWith(i.href))?.label || pathname.split('/').pop().replace(/-/g, ' ')}
+                </span>
               </div>
             </div>
 

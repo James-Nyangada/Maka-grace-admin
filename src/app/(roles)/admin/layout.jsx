@@ -21,25 +21,23 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthGuard>
-          <SidebarProvider
-            style={{
-              "--sidebar-width": "calc(var(--spacing) * 72)",
-              "--header-height": "calc(var(--spacing) * 12)",
-            }}
-          >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-              <AdminSiteHeader />
-              <div className="flex flex-1 flex-col">
-                {children}
-              </div>
-            </SidebarInset>
-          </SidebarProvider>
-        </AuthGuard>
-      </body>
-    </html>
+    <div className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}>
+      <AuthGuard>
+        <SidebarProvider
+          style={{
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          }}
+        >
+          <AppSidebar variant="inset" />
+          <SidebarInset>
+            <AdminSiteHeader />
+            <div className="flex flex-1 flex-col">
+              {children}
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </AuthGuard>
+    </div>
   );
 }
