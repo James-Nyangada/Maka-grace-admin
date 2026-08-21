@@ -10,11 +10,13 @@ import {
   Globe, MessageSquare, CalendarCheck, DollarSign, ArrowUpRight, ArrowDownRight, Activity
 } from "lucide-react";
 import { motion } from "framer-motion";
+import WorldMap from "@/components/WorldMap";
 
 export default function AnalyticsDashboard() {
   const [overview, setOverview] = useState(null);
   const [trafficData, setTrafficData] = useState([]);
   const [topPackages, setTopPackages] = useState([]);
+  const [locationData, setLocationData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -24,10 +26,11 @@ export default function AnalyticsDashboard() {
         setLoading(true);
 
         // Fetch each independently so partial failures don't break the whole page
-        const [overviewRes, trafficRes, topPackagesRes] = await Promise.allSettled([
+        const [overviewRes, trafficRes, topPackagesRes, locationsRes] = await Promise.allSettled([
           api.analytics.getOverview(),
           api.analytics.getTrafficVsConversions(),
-          api.analytics.getTopPackages()
+          api.analytics.getTopPackages(),
+          api.analytics.getVisitorLocations()
         ]);
         
         if (overviewRes.status === 'fulfilled') {
@@ -48,8 +51,14 @@ export default function AnalyticsDashboard() {
           console.error("Top packages fetch failed:", topPackagesRes.reason);
         }
 
+        if (locationsRes.status === 'fulfilled') {
+          setLocationData(locationsRes.value?.data || []);
+        } else {
+          console.error("Locations fetch failed:", locationsRes.reason);
+        }
+
         // Show error only if ALL calls failed
-        if (overviewRes.status === 'rejected' && trafficRes.status === 'rejected' && topPackagesRes.status === 'rejected') {
+        if (overviewRes.status === 'rejected' && trafficRes.status === 'rejected' && topPackagesRes.status === 'rejected' && locationsRes.status === 'rejected') {
           setError("Failed to load analytics data. Please check that the server is running.");
         }
       } catch (err) {
@@ -233,7 +242,7 @@ export default function AnalyticsDashboard() {
         </motion.div>
 
         {/* Bottom Row */}
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
             <h3 className="text-xl font-bold text-foreground mb-6">Top Packages by Revenue</h3>
             <div className="h-[350px] w-full">
@@ -259,6 +268,20 @@ export default function AnalyticsDashboard() {
                 </ResponsiveContainer>
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">No package data available</div>
+              )}
+            </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-foreground">Visitors by Country</h3>
+              <p className="text-sm text-muted-foreground">Geographic distribution of your audience</p>
+            </div>
+            <div className="h-[350px] w-full bg-slate-50/50 dark:bg-slate-900/20 rounded-xl flex items-center justify-center p-4">
+              {locationData && locationData.length > 0 ? (
+                <WorldMap data={locationData} />
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">No location data available</div>
               )}
             </div>
           </motion.div>

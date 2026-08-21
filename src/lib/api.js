@@ -564,5 +564,11 @@ export const api = {
       });
       return handleResponse(response);
     },
+    getVisitorLocations: async () => {
+      const response = await fetch(`${API_BASE_URL}/analytics/locations`, {
+        headers: getHeaders(),
+      });
+      return handleResponse(response);
+    },
   }
 };
