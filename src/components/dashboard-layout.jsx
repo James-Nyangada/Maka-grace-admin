@@ -21,6 +21,7 @@ import {
   LogOut,
   Image as ImageIcon,
   Receipt,
+  Ticket,
 } from "lucide-react"
 
 const sidebarItems = [
@@ -28,6 +29,7 @@ const sidebarItems = [
     { icon: Home, label: "Overview", href: "/super-admin/dashboard" },
     { icon: Package, label: "Packages", href: "/super-admin/packages" },
     { icon: Calendar, label: "Bookings", href: "/super-admin/booking" },
+    { icon: Ticket, label: "Booking Vouchers", href: "/super-admin/booking-voucher" },
     { icon: Receipt, label: "Invoices", href: "/super-admin/invoice" },
     { icon: FileText, label: "Blog Posts", href: "/super-admin/blog" },
     { icon: MessageSquare, label: "Testimonials", href: "/super-admin/testimonials" },
