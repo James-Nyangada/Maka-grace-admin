@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
+import { DashboardLayout } from "@/components/dashboard-layout";
+
 export default function BookingVoucherPage() {
   const [vouchers, setVouchers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -269,214 +271,216 @@ export default function BookingVoucherPage() {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Booking Vouchers</h1>
-          <p className="text-muted-foreground">Manage and generate PDF vouchers for hotel bookings.</p>
-        </div>
-        <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" /> Create Voucher
-        </Button>
-      </div>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle>All Vouchers</CardTitle>
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by ID, guest, or hotel..."
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+    <DashboardLayout>
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Booking Vouchers</h1>
+            <p className="text-muted-foreground">Manage and generate PDF vouchers for hotel bookings.</p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Voucher ID</TableHead>
-                  <TableHead>Guest Name</TableHead>
-                  <TableHead>Hotel/Lodge</TableHead>
-                  <TableHead>Check In</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
+          <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" /> Create Voucher
+          </Button>
+        </div>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle>All Vouchers</CardTitle>
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by ID, guest, or hotel..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-10">
-                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
-                    </TableCell>
+                    <TableHead>Voucher ID</TableHead>
+                    <TableHead>Guest Name</TableHead>
+                    <TableHead>Hotel/Lodge</TableHead>
+                    <TableHead>Check In</TableHead>
+                    <TableHead>Created At</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ) : filteredVouchers.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                      No vouchers found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredVouchers.map((v) => (
-                    <TableRow key={v._id}>
-                      <TableCell className="font-medium">{v.voucherId || "N/A"}</TableCell>
-                      <TableCell>{v.guestName}</TableCell>
-                      <TableCell>{v.hotelLodge}</TableCell>
-                      <TableCell>{format(new Date(v.checkInDate), "dd MMM yyyy")}</TableCell>
-                      <TableCell>{format(new Date(v.createdAt), "dd MMM yyyy")}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="mr-2"
-                          onClick={() => setPreviewVoucher(v)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" /> View & Print
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(v._id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-10">
+                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                       </TableCell>
                     </TableRow>
-                  ))
+                  ) : filteredVouchers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                        No vouchers found.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredVouchers.map((v) => (
+                      <TableRow key={v._id}>
+                        <TableCell className="font-medium">{v.voucherId || "N/A"}</TableCell>
+                        <TableCell>{v.guestName}</TableCell>
+                        <TableCell>{v.hotelLodge}</TableCell>
+                        <TableCell>{format(new Date(v.checkInDate), "dd MMM yyyy")}</TableCell>
+                        <TableCell>{format(new Date(v.createdAt), "dd MMM yyyy")}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mr-2"
+                            onClick={() => setPreviewVoucher(v)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" /> View & Print
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(v._id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Booking Voucher</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreateVoucher} className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Hotel / Lodge *</Label>
+                  <Input required name="hotelLodge" value={formData.hotelLodge} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label>From *</Label>
+                  <Input required name="from" value={formData.from} onChange={handleInputChange} />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Guest Name *</Label>
+                  <Input required name="guestName" value={formData.guestName} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nationality *</Label>
+                  <Input required name="nationality" value={formData.nationality} onChange={handleInputChange} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Phone Contact *</Label>
+                  <Input required name="phone" value={formData.phone} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Room Type *</Label>
+                  <Input required name="roomType" placeholder="e.g. Double Deluxe" value={formData.roomType} onChange={handleInputChange} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Check In Date *</Label>
+                  <Input required type="date" name="checkInDate" value={formData.checkInDate} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Check Out Date *</Label>
+                  <Input required type="date" name="checkOutDate" value={formData.checkOutDate} onChange={handleInputChange} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Meal Plan *</Label>
+                  <Input required name="mealPlan" placeholder="e.g. Half Board" value={formData.mealPlan} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Number of Nights *</Label>
+                  <Input required type="number" min="1" name="numberOfNights" value={formData.numberOfNights} onChange={handleInputChange} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Number of Rooms *</Label>
+                  <Input required type="number" min="1" name="numberOfRooms" value={formData.numberOfRooms} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-2 flex gap-4">
+                  <div className="flex-1 space-y-2">
+                    <Label>Adults *</Label>
+                    <Input required type="number" min="1" name="numberOfAdults" value={formData.numberOfAdults} onChange={handleInputChange} />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <Label>Children</Label>
+                    <Input type="number" min="0" name="numberOfChildren" value={formData.numberOfChildren} onChange={handleInputChange} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Remarks / Special Requests</Label>
+                <Textarea name="remarks" value={formData.remarks} onChange={handleInputChange} rows={3} />
+              </div>
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
+                <Button type="submit">Generate Voucher</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={!!previewVoucher} onOpenChange={(open) => !open && setPreviewVoucher(null)}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Voucher Preview (ID: {previewVoucher?.voucherId})</DialogTitle>
+            </DialogHeader>
+            
+            {previewVoucher && (
+              <div className="border rounded-md p-6 space-y-6 bg-slate-50 dark:bg-slate-900">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-xl font-bold text-emerald-600">{previewVoucher.hotelLodge}</h3>
+                  <div className="text-right">
+                    <p className="font-medium">Guest: {previewVoucher.guestName}</p>
+                    <p className="text-sm text-muted-foreground">{format(new Date(previewVoucher.checkInDate), "MMM dd, yyyy")} - {format(new Date(previewVoucher.checkOutDate), "MMM dd, yyyy")}</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><span className="font-medium">Nationality:</span> {previewVoucher.nationality}</div>
+                  <div><span className="font-medium">Phone:</span> {previewVoucher.phone}</div>
+                  <div><span className="font-medium">Room Type:</span> {previewVoucher.roomType} ({previewVoucher.numberOfRooms} room)</div>
+                  <div><span className="font-medium">Occupants:</span> {previewVoucher.numberOfAdults} Adults, {previewVoucher.numberOfChildren} Children</div>
+                  <div><span className="font-medium">Meal Plan:</span> {previewVoucher.mealPlan}</div>
+                  <div><span className="font-medium">Nights:</span> {previewVoucher.numberOfNights}</div>
+                </div>
+
+                {previewVoucher.remarks && (
+                  <div className="text-sm border-t pt-4 mt-4">
+                    <span className="font-medium block mb-1">Remarks:</span>
+                    <p className="text-muted-foreground italic">{previewVoucher.remarks}</p>
+                  </div>
                 )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create New Booking Voucher</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreateVoucher} className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Hotel / Lodge *</Label>
-                <Input required name="hotelLodge" value={formData.hotelLodge} onChange={handleInputChange} />
               </div>
-              <div className="space-y-2">
-                <Label>From *</Label>
-                <Input required name="from" value={formData.from} onChange={handleInputChange} />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Guest Name *</Label>
-                <Input required name="guestName" value={formData.guestName} onChange={handleInputChange} />
-              </div>
-              <div className="space-y-2">
-                <Label>Nationality *</Label>
-                <Input required name="nationality" value={formData.nationality} onChange={handleInputChange} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Phone Contact *</Label>
-                <Input required name="phone" value={formData.phone} onChange={handleInputChange} />
-              </div>
-              <div className="space-y-2">
-                <Label>Room Type *</Label>
-                <Input required name="roomType" placeholder="e.g. Double Deluxe" value={formData.roomType} onChange={handleInputChange} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Check In Date *</Label>
-                <Input required type="date" name="checkInDate" value={formData.checkInDate} onChange={handleInputChange} />
-              </div>
-              <div className="space-y-2">
-                <Label>Check Out Date *</Label>
-                <Input required type="date" name="checkOutDate" value={formData.checkOutDate} onChange={handleInputChange} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Meal Plan *</Label>
-                <Input required name="mealPlan" placeholder="e.g. Half Board" value={formData.mealPlan} onChange={handleInputChange} />
-              </div>
-              <div className="space-y-2">
-                <Label>Number of Nights *</Label>
-                <Input required type="number" min="1" name="numberOfNights" value={formData.numberOfNights} onChange={handleInputChange} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Number of Rooms *</Label>
-                <Input required type="number" min="1" name="numberOfRooms" value={formData.numberOfRooms} onChange={handleInputChange} />
-              </div>
-              <div className="space-y-2 flex gap-4">
-                <div className="flex-1 space-y-2">
-                  <Label>Adults *</Label>
-                  <Input required type="number" min="1" name="numberOfAdults" value={formData.numberOfAdults} onChange={handleInputChange} />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Label>Children</Label>
-                  <Input type="number" min="0" name="numberOfChildren" value={formData.numberOfChildren} onChange={handleInputChange} />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Remarks / Special Requests</Label>
-              <Textarea name="remarks" value={formData.remarks} onChange={handleInputChange} rows={3} />
-            </div>
+            )}
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
-              <Button type="submit">Generate Voucher</Button>
+              <Button variant="outline" onClick={() => setPreviewVoucher(null)}>Close</Button>
+              <Button onClick={downloadPDF} disabled={isDownloading} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                {isDownloading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
+                {isDownloading ? "Generating PDF..." : "Download PDF"}
+              </Button>
             </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!previewVoucher} onOpenChange={(open) => !open && setPreviewVoucher(null)}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Voucher Preview (ID: {previewVoucher?.voucherId})</DialogTitle>
-          </DialogHeader>
-          
-          {previewVoucher && (
-            <div className="border rounded-md p-6 space-y-6 bg-slate-50 dark:bg-slate-900">
-              <div className="flex justify-between items-start">
-                <h3 className="text-xl font-bold text-emerald-600">{previewVoucher.hotelLodge}</h3>
-                <div className="text-right">
-                  <p className="font-medium">Guest: {previewVoucher.guestName}</p>
-                  <p className="text-sm text-muted-foreground">{format(new Date(previewVoucher.checkInDate), "MMM dd, yyyy")} - {format(new Date(previewVoucher.checkOutDate), "MMM dd, yyyy")}</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="font-medium">Nationality:</span> {previewVoucher.nationality}</div>
-                <div><span className="font-medium">Phone:</span> {previewVoucher.phone}</div>
-                <div><span className="font-medium">Room Type:</span> {previewVoucher.roomType} ({previewVoucher.numberOfRooms} room)</div>
-                <div><span className="font-medium">Occupants:</span> {previewVoucher.numberOfAdults} Adults, {previewVoucher.numberOfChildren} Children</div>
-                <div><span className="font-medium">Meal Plan:</span> {previewVoucher.mealPlan}</div>
-                <div><span className="font-medium">Nights:</span> {previewVoucher.numberOfNights}</div>
-              </div>
-
-              {previewVoucher.remarks && (
-                <div className="text-sm border-t pt-4 mt-4">
-                  <span className="font-medium block mb-1">Remarks:</span>
-                  <p className="text-muted-foreground italic">{previewVoucher.remarks}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPreviewVoucher(null)}>Close</Button>
-            <Button onClick={downloadPDF} disabled={isDownloading} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-              {isDownloading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
-              {isDownloading ? "Generating PDF..." : "Download PDF"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </DashboardLayout>
   );
 }
