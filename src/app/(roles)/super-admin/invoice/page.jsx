@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Download, Save, Trash2, Printer } from "lucide-react"
+import { Download, Save, Mail, Trash2, Printer } from "lucide-react"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
 
@@ -145,7 +145,7 @@ export default function InvoicePage() {
     currency: "USD"
   })
 
-
+  const invoiceRef = useRef(null)
 
   useEffect(() => {
     fetchData()
@@ -223,208 +223,90 @@ export default function InvoicePage() {
   }, [invoiceData.depositPercentage, invoiceData.totalAmount])
 
   const generatePDF = async () => {
+    const element = invoiceRef.current;
+    if (!element) {
+      console.error("Invoice template element not found!")
+      return null;
+    }
+
     try {
-      const { default: jsPDF } = await import('jspdf');
-      const d = invoiceData;
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas')
+      ]);
 
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pw = 210;
-      const margin = 15;
-      const contentW = pw - margin * 2;
-      let y = margin;
+      // Create isolated iframe
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'absolute';
+      iframe.style.width = '794px';
+      iframe.style.height = '1123px';
+      iframe.style.top = '-9999px';
+      iframe.style.left = '-9999px';
+      document.body.appendChild(iframe);
 
-      // Colors (RGB)
-      const blue900 = [30, 58, 138];
-      const gray800 = [31, 41, 55];
-      const gray600 = [75, 85, 99];
-      const gray500 = [107, 114, 128];
-      const yellow400 = [250, 204, 21];
-      const blue50 = [239, 246, 255];
-      const blue100 = [219, 234, 254];
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
 
-      // Decorative corner shapes
-      pdf.setFillColor(...blue100);
-      pdf.roundedRect(0, 0, 40, 40, 0, 20, 'F');
-      pdf.roundedRect(pw - 50, 297 - 50, 50, 50, 20, 0, 'F');
+      // Copy all styles from the parent document to ensure Tailwind works in the iframe
+      const styleLinks = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+        .map(el => el.outerHTML)
+        .join('\\n');
 
-      // Load and draw logo
-      let logoOffset = 0;
-      try {
-        const response = await fetch('/logo-maka.png');
-        const blob = await response.blob();
-        const base64data = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(blob);
-        });
-        const logoH = 14;
-        const logoW = 14;
-        pdf.addImage(base64data, 'PNG', margin, y + 1, logoW, logoH);
-        logoOffset = logoW + 3;
-      } catch (e) {
-        console.error('Logo failed to load:', e);
-      }
+      // Setup iframe content
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            ${styleLinks}
+            <style>
+              body { margin: 0; padding: 0; background: white; }
+              /* Force convert any unsupported modern colors for html2canvas if needed */
+              .bg-blue-100 { background-color: #dbeafe !important; }
+              .bg-blue-50 { background-color: #eff6ff !important; }
+              .text-blue-900 { color: #1e3a8a !important; }
+              .text-blue-950 { color: #172554 !important; }
+              .bg-yellow-400 { background-color: #facc15 !important; }
+            </style>
+          </head>
+          <body>
+            ${element.outerHTML}
+          </body>
+        </html>
+      `);
+      doc.close();
 
-      // Header: Company name (shifted right if logo loaded)
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(20);
-      pdf.setTextColor(...blue900);
-      pdf.text('MAKA GRACE', margin + logoOffset, y + 10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(8);
-      pdf.setTextColor(...gray500);
-      pdf.text('TRAVEL AGENCY', margin + logoOffset, y + 16);
-
-      // Header right: INVOICE
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(28);
-      pdf.setTextColor(...blue900);
-      pdf.text('INVOICE', pw - margin, y + 10, { align: 'right' });
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(11);
-      pdf.setTextColor(...gray600);
-      pdf.text(`#${d.invoiceNumber}`, pw - margin, y + 18, { align: 'right' });
-      pdf.setFontSize(9);
-      pdf.setTextColor(...gray500);
-      pdf.text(`Date: ${d.date}`, pw - margin, y + 24, { align: 'right' });
-
-      y += 38;
-
-      // Business Details (left)
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(9);
-      pdf.setTextColor(...blue900);
-      pdf.text('BUSINESS DETAILS:', margin, y);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(...gray800);
-      pdf.text('Maka Grace Travel', margin, y + 6);
-      pdf.setFontSize(9);
-      pdf.setTextColor(...gray600);
-      pdf.text('Nairobi, Kenya', margin, y + 11);
-      pdf.text('info@makagracetravel.co.ke', margin, y + 16);
-      pdf.text('www.makagracetravel.co.ke', margin, y + 21);
-
-      // Invoice To (right)
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(9);
-      pdf.setTextColor(...blue900);
-      pdf.text('INVOICE TO:', pw - margin, y, { align: 'right' });
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(...gray800);
-      pdf.text((d.customerName || 'Customer Name').toUpperCase(), pw - margin, y + 6, { align: 'right' });
-      pdf.setFontSize(9);
-      pdf.setTextColor(...gray600);
-      if (d.customerEmail) pdf.text(d.customerEmail, pw - margin, y + 11, { align: 'right' });
-      if (d.customerPhone) pdf.text(d.customerPhone, pw - margin, y + 16, { align: 'right' });
-
-      y += 32;
-
-      // Table
-      const col1W = 18;
-      const col3W = 40;
-      const col2W = contentW - col1W - col3W;
-      const rowH = 10;
-      const currSymbol = d.currency === 'USD' ? '$' : 'KSH ';
-
-      // Table header
-      pdf.setFillColor(...yellow400);
-      pdf.roundedRect(margin, y, contentW, rowH, 2, 2, 'F');
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(10);
-      pdf.setTextColor(...blue900);
-      pdf.text('Item', margin + 4, y + 7);
-      pdf.text('Description', margin + col1W + 4, y + 7);
-      pdf.text('Total', margin + contentW - 4, y + 7, { align: 'right' });
-      y += rowH;
-
-      // Table row
-      pdf.setDrawColor(229, 231, 235);
-      pdf.line(margin, y + rowH, margin + contentW, y + rowH);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(...gray800);
-      pdf.text('1', margin + 4, y + 7);
-      pdf.setTextColor(...gray600);
-      pdf.text(d.packageName || 'Travel Package', margin + col1W + 4, y + 7);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(...gray800);
-      pdf.text(`${currSymbol}${(d.totalAmount || 0).toFixed(2)}`, margin + contentW - 4, y + 7, { align: 'right' });
-      y += rowH + 12;
-
-      // Totals
-      const totalsX = pw - margin - 70;
-      const totalsW = 70;
-
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(...gray600);
-      pdf.text('Total Amount:', totalsX, y);
-      pdf.text(`${currSymbol}${(d.totalAmount || 0).toFixed(2)}`, totalsX + totalsW, y, { align: 'right' });
-
-      if ((d.depositPercentage || 0) > 0) {
-        y += 7;
-        pdf.text(`Deposit (${d.depositPercentage}%):`, totalsX, y);
-        pdf.text(`${currSymbol}${(d.depositAmount || 0).toFixed(2)}`, totalsX + totalsW, y, { align: 'right' });
-      }
-
-      y += 4;
-      pdf.setDrawColor(...yellow400);
-      pdf.setLineWidth(0.8);
-      pdf.line(totalsX, y, totalsX + totalsW, y);
-      y += 7;
-
-      const amountDue = (d.depositPercentage || 0) > 0 ? (d.depositAmount || 0) : (d.totalAmount || 0);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(13);
-      pdf.setTextColor(...blue900);
-      pdf.text('Amount Due:', totalsX, y);
-      pdf.text(`${currSymbol}${amountDue.toFixed(2)}`, totalsX + totalsW, y, { align: 'right' });
-      y += 16;
-
-      // Payment Info
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(9);
-      pdf.setTextColor(...blue900);
-      pdf.text('PAYMENT INFO:', margin, y);
-      y += 5;
-
-      const paymentLines = (d.paymentDetails || '').split('\n');
-      const payBoxH = paymentLines.length * 5 + 8;
-      pdf.setFillColor(...blue50);
-      pdf.roundedRect(margin, y, 80, payBoxH, 2, 2, 'F');
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(9);
-      pdf.setTextColor(...gray600);
-      paymentLines.forEach((line, i) => {
-        pdf.text(line, margin + 5, y + 6 + i * 5);
+      // Wait for iframe content and styles to fully load
+      await new Promise(resolve => {
+        if (iframe.contentWindow.document.readyState === 'complete') {
+          setTimeout(resolve, 500);
+        } else {
+          iframe.contentWindow.onload = () => setTimeout(resolve, 500);
+        }
       });
 
-      // Footer
-      const footerY = 275;
-      pdf.setDrawColor(229, 231, 235);
-      pdf.setLineWidth(0.3);
-      pdf.line(margin, footerY, pw - margin, footerY);
+      const iframeElement = doc.body.firstChild;
 
-      pdf.setFont('helvetica', 'italic');
-      pdf.setFontSize(7);
-      pdf.setTextColor(...gray500);
-      pdf.text(
-        'Thank you for choosing Maka Grace Travel. All payments should be made prior to the travel date.',
-        margin, footerY + 6, { maxWidth: 90 }
-      );
+      // Capture the element inside the isolated iframe
+      const canvas = await html2canvas(iframeElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
 
-      // Signature line
-      const sigX = pw - margin - 40;
-      pdf.setDrawColor(...gray800);
-      pdf.setLineWidth(0.5);
-      pdf.line(sigX, footerY + 6, sigX + 35, footerY + 6);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(7);
-      pdf.setTextColor(...gray600);
-      pdf.text('Authorized Sign', sigX + 5, footerY + 10);
+      document.body.removeChild(iframe);
 
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+
+      const pdf = new jsPDF({
+        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [imgWidth, imgHeight],
+      });
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
       return pdf;
     } catch (error) {
       console.error("PDF generation failed:", error)
@@ -510,12 +392,43 @@ export default function InvoicePage() {
 
 
 
+  const handleSendEmail = async (invoice) => {
+    const loadingToast = toast.loading("Generating PDF and sending email...")
+    try {
+      setInvoiceData({
+        ...invoiceData,
+        ...invoice,
+        date: invoice.createdAt ? new Date(invoice.createdAt).toISOString().split('T')[0] : invoiceData.date
+      })
+      
+      // Wait for React to render the updated state in the hidden ref
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      const pdf = await generatePDF()
+      if (!pdf) throw new Error("PDF generation failed")
+
+      // Get PDF as base64 data URI string for the server endpoint
+      const pdfBase64 = pdf.output('datauristring')
+
+      await api.invoices.sendEmail(invoice._id, { pdfBase64 })
+      toast.success("Invoice sent to customer successfully!", { id: loadingToast })
+    } catch (error) {
+      console.error("Error sending email:", error)
+      toast.error(`Failed to send email: ${error.message}`, { id: loadingToast })
+    }
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Invoices</h1>
           <p className="text-muted-foreground">Manage and generate invoices for bookings</p>
+        </div>
+
+        {/* Hidden template always in DOM for iframe extraction */}
+        <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', zIndex: -100, top: 0, left: 0, width: '100%' }}>
+          <InvoiceTemplate invoiceData={invoiceData} forwardRef={invoiceRef} />
         </div>
 
 
@@ -684,6 +597,14 @@ export default function InvoicePage() {
                                   title="Download PDF"
                                 >
                                   <Download className="h-4 w-4 text-green-600" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => handleSendEmail(invoice)}
+                                  title="Send Email"
+                                >
+                                  <Mail className="h-4 w-4 text-blue-600" />
                                 </Button>
 
                                 <Button 
