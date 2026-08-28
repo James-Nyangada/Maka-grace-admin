@@ -87,6 +87,11 @@ const data = {
       icon: IconListDetails,
     },
     {
+      title: "Booking Vouchers",
+      url: "/super-admin/booking-voucher",
+      icon: IconReport,
+    },
+    {
       title: "Testimonials",
       url: "/admin/testimonials",
       icon: IconMessageCircle2,
