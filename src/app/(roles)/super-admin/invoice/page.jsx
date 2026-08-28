@@ -223,75 +223,154 @@ export default function InvoicePage() {
   }, [invoiceData.depositPercentage, invoiceData.totalAmount])
 
   const generatePDF = async () => {
-    const element = invoiceRef.current;
-    if (!element) {
-      console.error("Invoice template element not found!")
-      return null;
-    }
-
     try {
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
         import('jspdf'),
         import('html2canvas')
       ]);
 
+      const htmlString = `
+        <div id="v-capture" style="width: 800px; padding: 40px; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; background: white; color: #1f2937; position: relative;">
+          
+          <!-- Decorative Elements (Simulated with simple shapes/borders) -->
+          <div style="position: absolute; top: 0; left: 0; width: 128px; height: 128px; background: #dbeafe; border-bottom-right-radius: 100px; opacity: 0.5;"></div>
+          <div style="position: absolute; bottom: 0; right: 0; width: 192px; height: 192px; background: #dbeafe; border-top-left-radius: 150px; opacity: 0.5;"></div>
+
+          <!-- Header -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 48px; position: relative; z-index: 10;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <img src="/logo-maka.png" alt="Maka Grace Travel" style="height: 64px; object-fit: contain;" />
+              <div>
+                <h2 style="font-size: 24px; font-weight: bold; color: #1e3a8a; margin: 0; letter-spacing: -0.025em;">MAKA GRACE</h2>
+                <p style="font-size: 14px; font-weight: 500; color: #6b7280; margin: 0; letter-spacing: 0.1em; text-transform: uppercase;">Travel Agency</p>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <h1 style="font-size: 36px; font-weight: bold; color: #1e3a8a; margin: 0 0 8px 0;">INVOICE</h1>
+              <p style="font-size: 18px; font-weight: 500; color: #4b5563; margin: 0;">#${invoiceData.invoiceNumber}</p>
+              <p style="font-size: 14px; color: #6b7280; margin: 4px 0 0 0;">Date: ${invoiceData.date}</p>
+            </div>
+          </div>
+
+          <!-- Addresses -->
+          <div style="display: flex; justify-content: space-between; margin-bottom: 48px; position: relative; z-index: 10;">
+            <div>
+              <h3 style="font-weight: bold; color: #1e3a8a; margin: 0 0 8px 0; text-transform: uppercase; font-size: 14px;">Business Details:</h3>
+              <p style="font-weight: 500; color: #1f2937; margin: 0;">Maka Grace Travel</p>
+              <p style="font-size: 14px; color: #4b5563; margin: 0;">Nairobi, Kenya</p>
+              <p style="font-size: 14px; color: #4b5563; margin: 0;">info@makagracetravel.co.ke</p>
+              <p style="font-size: 14px; color: #4b5563; margin: 0;">www.makagracetravel.co.ke</p>
+            </div>
+            <div style="text-align: right;">
+              <h3 style="font-weight: bold; color: #1e3a8a; margin: 0 0 8px 0; text-transform: uppercase; font-size: 14px;">Invoice To:</h3>
+              <p style="font-weight: 500; color: #1f2937; margin: 0; text-transform: uppercase;">${invoiceData.customerName || "Customer Name"}</p>
+              ${invoiceData.customerEmail ? `<p style="font-size: 14px; color: #4b5563; margin: 0;">${invoiceData.customerEmail}</p>` : ''}
+              ${invoiceData.customerPhone ? `<p style="font-size: 14px; color: #4b5563; margin: 0;">${invoiceData.customerPhone}</p>` : ''}
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div style="margin-bottom: 40px; position: relative; z-index: 10;">
+            <table style="width: 100%; text-align: left; border-collapse: collapse;">
+              <thead>
+                <tr style="background-color: #facc15; color: #172554;">
+                  <th style="padding: 12px 16px; font-weight: bold; border-top-left-radius: 6px; border-bottom-left-radius: 6px; width: 64px;">Item</th>
+                  <th style="padding: 12px 16px; font-weight: bold;">Description</th>
+                  <th style="padding: 12px 16px; font-weight: bold; border-top-right-radius: 6px; border-bottom-right-radius: 6px; text-align: right;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                  <td style="padding: 16px; font-weight: 500;">1</td>
+                  <td style="padding: 16px; color: #374151;">${invoiceData.packageName || "Travel Package"}</td>
+                  <td style="padding: 16px; text-align: right; font-weight: 500;">${invoiceData.currency === 'USD' ? '$' : 'KSH '}${(invoiceData.totalAmount || 0).toFixed(2)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Totals -->
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 48px; position: relative; z-index: 10;">
+            <div style="width: 256px;">
+              <div style="display: flex; justify-content: space-between; font-weight: 500; color: #4b5563; margin-bottom: 12px;">
+                <span>Total Amount:</span>
+                <span>${invoiceData.currency === 'USD' ? '$' : 'KSH '}${(invoiceData.totalAmount || 0).toFixed(2)}</span>
+              </div>
+              ${(invoiceData.depositPercentage || 0) > 0 ? `
+              <div style="display: flex; justify-content: space-between; font-weight: 500; color: #4b5563; margin-bottom: 12px;">
+                <span>Deposit (${invoiceData.depositPercentage}%):</span>
+                <span>${invoiceData.currency === 'USD' ? '$' : 'KSH '}${(invoiceData.depositAmount || 0).toFixed(2)}</span>
+              </div>
+              ` : ''}
+              <div style="display: flex; justify-content: space-between; font-weight: bold; color: #1e3a8a; font-size: 18px; border-top: 2px solid #facc15; padding-top: 8px;">
+                <span>Amount Due:</span>
+                <span>
+                  ${invoiceData.currency === 'USD' ? '$' : 'KSH '}
+                  ${((invoiceData.depositPercentage || 0) > 0 ? (invoiceData.depositAmount || 0) : (invoiceData.totalAmount || 0)).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Details -->
+          <div style="margin-bottom: 32px; position: relative; z-index: 10;">
+            <h3 style="font-weight: bold; color: #1e3a8a; margin: 0 0 12px 0; text-transform: uppercase; font-size: 14px;">Payment Info:</h3>
+            <div style="background-color: #eff6ff; padding: 16px; border-radius: 6px; display: inline-block; min-width: 300px;">
+              ${(invoiceData.paymentDetails || "").split('\\n').map(line => `<p style="font-size: 14px; color: #374151; font-weight: 500; margin: 0 0 4px 0;">${line}</p>`).join('')}
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="position: absolute; bottom: 40px; left: 40px; right: 40px; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e5e7eb; padding-top: 24px;">
+            <p style="font-size: 12px; color: #6b7280; font-style: italic; max-width: 384px; margin: 0;">
+              Thank you for choosing Maka Grace Travel. All payments should be made prior to the travel date.
+            </p>
+            <div style="text-align: center;">
+              <div style="width: 128px; border-bottom: 2px solid #1f2937; margin-bottom: 8px;"></div>
+              <p style="font-size: 12px; font-weight: 500; color: #4b5563; margin: 0;">Authorized Sign</p>
+            </div>
+          </div>
+        </div>
+      `;
+
       // Create isolated iframe
       const iframe = document.createElement('iframe');
       iframe.style.position = 'absolute';
-      iframe.style.width = '794px';
+      iframe.style.width = '800px';
       iframe.style.height = '1123px';
       iframe.style.top = '-9999px';
       iframe.style.left = '-9999px';
       document.body.appendChild(iframe);
 
-      const doc = iframe.contentDocument || iframe.contentWindow.document;
-
-      // Copy all styles from the parent document to ensure Tailwind works in the iframe
-      const styleLinks = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
-        .map(el => el.outerHTML)
-        .join('\\n');
-
-      // Setup iframe content
+      const doc = iframe.contentWindow.document;
       doc.open();
+      const baseUrl = window.location.origin;
       doc.write(`
         <!DOCTYPE html>
         <html>
           <head>
-            ${styleLinks}
+            <base href="${baseUrl}/" />
             <style>
               body { margin: 0; padding: 0; background: white; }
-              /* Force convert any unsupported modern colors for html2canvas if needed */
-              .bg-blue-100 { background-color: #dbeafe !important; }
-              .bg-blue-50 { background-color: #eff6ff !important; }
-              .text-blue-900 { color: #1e3a8a !important; }
-              .text-blue-950 { color: #172554 !important; }
-              .bg-yellow-400 { background-color: #facc15 !important; }
             </style>
           </head>
           <body>
-            ${element.outerHTML}
+            ${htmlString}
           </body>
         </html>
       `);
       doc.close();
 
-      // Wait for iframe content and styles to fully load
-      await new Promise(resolve => {
-        if (iframe.contentWindow.document.readyState === 'complete') {
-          setTimeout(resolve, 500);
-        } else {
-          iframe.contentWindow.onload = () => setTimeout(resolve, 500);
-        }
-      });
+      // Wait a moment for images to load in the iframe
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const iframeElement = doc.body.firstChild;
+      const captureTarget = doc.getElementById("v-capture");
 
       // Capture the element inside the isolated iframe
-      const canvas = await html2canvas(iframeElement, {
+      const canvas = await html2canvas(captureTarget, {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
       });
 
       document.body.removeChild(iframe);
