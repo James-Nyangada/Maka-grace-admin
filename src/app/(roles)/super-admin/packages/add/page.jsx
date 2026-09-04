@@ -24,6 +24,7 @@ const [packageData, setPackageData] = useState({
     highlights: [],
     packageActivities: [],
     specialNotes: "",
+    packageType: "Public",
   })
 
   const [hotels, setHotels] = useState([{ name: "", price: "", priceKSH: "" }])
@@ -171,6 +172,7 @@ const [packageData, setPackageData] = useState({
         tourClass: packageData.tourClass.trim(),
         duration: packageData.duration,
         category: packageData.category,
+        packageType: packageData.packageType,
         overview: packageData.specialNotes,
         inclusions: packageData.inclusions,
         exclusions: packageData.exclusions,
@@ -204,6 +206,7 @@ const [packageData, setPackageData] = useState({
         highlights: [],
         packageActivities: [],
         specialNotes: "",
+        packageType: "Public",
       })
       setHotels([{ name: "", price: "", priceKSH: "" }])
       setItinerary([{ day: "", plan: "" }])
@@ -311,6 +314,21 @@ const [packageData, setPackageData] = useState({
                       <SelectItem value="Corporate">Corporate</SelectItem>
                       <SelectItem value="Weekend">Weekend</SelectItem>
                       <SelectItem value="International">International</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="packageType">Package Type</Label>
+                  <Select
+                    value={packageData.packageType}
+                    onValueChange={(value) => setPackageData({ ...packageData, packageType: value })}
+                  >
+                    <SelectTrigger className="border-2 focus:border-primary">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Public">Public</SelectItem>
+                      <SelectItem value="Private">Private</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
