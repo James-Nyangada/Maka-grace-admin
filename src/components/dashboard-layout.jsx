@@ -30,6 +30,7 @@ const sidebarItems = [
     { icon: Package, label: "Packages", href: "/super-admin/packages" },
     { icon: Calendar, label: "Bookings", href: "/super-admin/booking" },
     { icon: Ticket, label: "Booking Vouchers", href: "/super-admin/booking-voucher" },
+    { icon: Ticket, label: "Reservation Vouchers", href: "/super-admin/reservation-voucher" },
     { icon: Receipt, label: "Invoices", href: "/super-admin/invoice" },
     { icon: FileText, label: "Blog Posts", href: "/super-admin/blog" },
     { icon: MessageSquare, label: "Testimonials", href: "/super-admin/testimonials" },
